@@ -1,8 +1,10 @@
 # What users will have to type in a channel before a command
 command_prefix = "!minebotjr"
 discord_auth_key = "XXXXXXXXXXX"
+
 # Admin privileges
 admins = ['admin1', 'admin2']
+
 # Where server status is announced
 channel_announce = 'Channel Name'
 
