@@ -9,7 +9,6 @@ import (
 	"syscall"
 )
 
-
 /*
 
 This is a little bot for discord that can be used to spin up/down an EC2 instance that is presumeably running a
@@ -21,8 +20,8 @@ passed since the last player left. This is intended to save money.
 Uses keapler's Batchcraft, bwmarrins's discordgo & aws's aws-sdk-go libraries (among others)
 
  */
-
- const botPrefix string = "!minebotjr"
+const botPrefix string = "!minebotjr"
+var commandsMap = make(map[string]func(str []string, s *discordgo.Session, m *discordgo.MessageCreate))
 
 func main() {
 	authToken := os.Getenv("DISCORD_AUTH_TOKEN")
@@ -72,7 +71,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	channel, _ := s.Channel(m.ChannelID)
 	channelType := channel.Type
 
-	dispatchCommand( m, channelType )
+	dispatchCommand(m.Content, channelType, s, m)
 	// If the message is "ping" reply with "Pong!"
 	if m.Content == "ping" {
 		s.ChannelMessageSend(m.ChannelID, "Pong!")
@@ -84,23 +83,37 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 }
 
-func dispatchCommand(m *discordgo.MessageCreate, channelType discordgo.ChannelType) {
-	command := strings.Split(m.Content, " ")
+func dispatchCommand(message string, channelType discordgo.ChannelType, s *discordgo.Session, m *discordgo.MessageCreate) {
+	arguments := strings.Split(message, " ")
+
+	// If the command is in a public channel, make sure it is addressing minebot
+	if channelType == discordgo.ChannelTypeGuildText && arguments[0] != botPrefix {
+		return
+	} else if channelType == discordgo.ChannelTypeGuildText && arguments[0] == botPrefix {
+		arguments = arguments[1:]
+	}
 
 	// If the command is empty, ignore
-	if len(command) < 1 {
+	if len(arguments) < 1 {
 		return
 	}
 
-	// If the command is in a public channel, make sure it is addressing minebot
-	if channelType == discordgo.ChannelTypeGuildText && command[0] != botPrefix {
+	command, ok := commandsMap[arguments[0]]
 
+	if !ok {
+		help(arguments, s, m)
 	} else {
-		command = command[1:]
+		command(arguments, s, m)
 	}
+
 	// Determine if user is in private channel or not (in public channel, !minebot prefix needed)
 	// Verify user has proper access to bring server up or down
 	// Check status of server to see if up or down
 	// Bring server up or down
 	// Notify channel
+}
+
+func help(arguments []string, s *discordgo.Session, m *discordgo.MessageCreate) {
+	helpText := "Error, invalid command [%s]"
+	s.ChannelMessageSend(m.ChannelID, fmt.Sprintf(helpText, strings.Join(arguments, " ")))
 }
