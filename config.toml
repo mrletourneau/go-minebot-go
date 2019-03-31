@@ -1,0 +1,17 @@
+# What users will have to type in a channel before a command
+command_prefix = "!minebotjr"
+discord_auth_key = "XXXXXXXXXXX"
+# Admin privileges
+admins = ['admin1', 'admin2']
+# Where server status is announced
+channel_announce = 'Channel Name'
+
+[[server]]
+name = "Minecraft Server 1"
+idle_shutdown_time = 30
+server_id = "XXXXXXXXXXX"
+
+[[server]]
+name = "Minecraft Server 2"
+idle_shutdown_time = 0
+server_id = "XXXXXXXXXXX"
