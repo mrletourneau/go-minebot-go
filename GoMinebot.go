@@ -5,6 +5,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 )
 
@@ -21,9 +22,11 @@ Uses keapler's Batchcraft, bwmarrins's discordgo & aws's aws-sdk-go libraries (a
 
  */
 
+ const botPrefix string = "!minebotjr"
+
 func main() {
 	authToken := os.Getenv("DISCORD_AUTH_TOKEN")
-	
+
 	if authToken == "" {
 		fmt.Println( "No discord authentication token found. Exiting...")
 		os.Exit(0)
@@ -65,6 +68,11 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.Author.ID == s.State.User.ID {
 		return
 	}
+
+	channel, _ := s.Channel(m.ChannelID)
+	channelType := channel.Type
+
+	dispatchCommand( m, channelType )
 	// If the message is "ping" reply with "Pong!"
 	if m.Content == "ping" {
 		s.ChannelMessageSend(m.ChannelID, "Pong!")
@@ -74,4 +82,25 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.Content == "pong" {
 		s.ChannelMessageSend(m.ChannelID, "Ping!")
 	}
+}
+
+func dispatchCommand(m *discordgo.MessageCreate, channelType discordgo.ChannelType) {
+	command := strings.Split(m.Content, " ")
+
+	// If the command is empty, ignore
+	if len(command) < 1 {
+		return
+	}
+
+	// If the command is in a public channel, make sure it is addressing minebot
+	if channelType == discordgo.ChannelTypeGuildText && command[0] != botPrefix {
+
+	} else {
+		command = command[1:]
+	}
+	// Determine if user is in private channel or not (in public channel, !minebot prefix needed)
+	// Verify user has proper access to bring server up or down
+	// Check status of server to see if up or down
+	// Bring server up or down
+	// Notify channel
 }
