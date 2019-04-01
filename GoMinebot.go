@@ -2,10 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/BurntSushi/toml"
 	"github.com/bwmarrin/discordgo"
-	"io/ioutil"
-	"log"
+	"github.com/mrletourneau/go-minebot-go/minebot"
 	"os"
 	"os/signal"
 	"strings"
@@ -25,38 +23,12 @@ Uses keapler's Batchcraft, bwmarrins's discordgo & aws's aws-sdk-go libraries (a
  */
 const botPrefix string = "!minebotjr"
 var commandsMap = make(map[string]func(str []string, s *discordgo.Session, m *discordgo.MessageCreate))
-
-type serverConfig struct{
-	Name string
-	Idle_shutdown_time int
-	Server_id string
-}
-
-type config struct{
-	Command_prefix string
-	Discord_auth_key string
-	Admins []string
-	Channel_announce string
-	Server []serverConfig
-}
-
-func loadConfig(c *config) {
-	config, err := ioutil.ReadFile("config.toml")
-	if err != nil {
-		panic(err)
-	}
-	if _, err := toml.Decode(string(config), c); err != nil {
-		log.Fatal(err)
-	}
-}
-
+var Config minebot.Config
 
 func main() {
 	authToken := os.Getenv("DISCORD_AUTH_TOKEN")
 
-	var Config config
-
-	loadConfig(&Config)
+	minebot.LoadConfig(&Config)
 
 	if authToken == "" {
 		fmt.Println( "No discord authentication token found. Exiting...")
